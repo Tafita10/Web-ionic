@@ -1,0 +1,574 @@
+openapi: 3.0.3
+info:
+  title: API Authentification - Projet Cloud P17
+  description: |
+    API REST de fournisseur d'identité conforme au cahier des charges Promotion 17.
+    
+    **Caractéristiques:**
+    - Firebase (en ligne) + PostgreSQL (offline) avec auto-switch
+    - Authentification email/mot de passe
+    - Sessions avec durée de vie paramétrable (défaut: 120 min)
+    - Limite de tentatives de connexion paramétrable (défaut: 3)
+    - API de déblocage pour administrateurs
+    
+    **Confidential - Not for Public Consumption or Distribution**
+  version: 1.0.0
+  contact:
+    name: Équipe P17
+    email: support@webrojo.mg
+
+servers:
+  - url: http://localhost:3000/api
+    description: Serveur local de développement
+  - url: https://api.webrojo.mg/api
+    description: Serveur de production
+
+tags:
+  - name: Authentification
+    description: Endpoints d'inscription, connexion, déconnexion
+  - name: Profil
+    description: Consultation et modification du profil utilisateur
+  - name: Administration
+    description: Gestion des utilisateurs (Manager uniquement)
+  - name: Santé
+    description: Health check et monitoring
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token JWT obtenu via /auth/login ou /auth/register
+
+  schemas:
+    Utilisateur:
+      type: object
+      properties:
+        id_utilisateur:
+          type: integer
+          example: 1
+        nom_complet:
+          type: string
+          example: "Jean Rakoto"
+        nom_utilisateur:
+          type: string
+          example: "jrakoto"
+        email:
+          type: string
+          format: email
+          example: "jean.rakoto@example.com"
+        id_type_utilisateur:
+          type: integer
+          description: "1=Manager, 2=Utilisateur, 3=Visiteur"
+          example: 2
+        est_actif:
+          type: boolean
+          example: true
+        est_verifie:
+          type: boolean
+          example: false
+        est_bloque:
+          type: boolean
+          example: false
+        telephone:
+          type: string
+          nullable: true
+          example: "+261340000000"
+
+    InscriptionRequest:
+      type: object
+      required:
+        - nom_complet
+        - nom_utilisateur
+        - email
+        - mot_de_passe
+      properties:
+        nom_complet:
+          type: string
+          minLength: 3
+          example: "Jean Rakoto"
+        nom_utilisateur:
+          type: string
+          minLength: 3
+          example: "jrakoto"
+        email:
+          type: string
+          format: email
+          example: "jean.rakoto@example.com"
+        mot_de_passe:
+          type: string
+          minLength: 8
+          example: "MotDePasse123"
+
+    ConnexionRequest:
+      type: object
+      required:
+        - identifiant
+        - mot_de_passe
+      properties:
+        identifiant:
+          type: string
+          description: "Email ou nom d'utilisateur"
+          example: "jean.rakoto@example.com"
+        mot_de_passe:
+          type: string
+          example: "MotDePasse123"
+
+    AuthResponse:
+      type: object
+      properties:
+        utilisateur:
+          $ref: '#/components/schemas/Utilisateur'
+        jetonAcces:
+          type: string
+          description: "Token JWT d'accès (durée: 2h par défaut)"
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        jetonRefresh:
+          type: string
+          description: "Token JWT de rafraîchissement (durée: 7j)"
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    RefreshRequest:
+      type: object
+      required:
+        - refresh_token
+      properties:
+        refresh_token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    ModifierProfilRequest:
+      type: object
+      properties:
+        nom_complet:
+          type: string
+          example: "Jean Claude Rakoto"
+        nom_utilisateur:
+          type: string
+          example: "jcrakoto"
+        email:
+          type: string
+          format: email
+          example: "jc.rakoto@example.com"
+        telephone:
+          type: string
+          example: "+261340000000"
+
+    ChangerMotDePasseRequest:
+      type: object
+      required:
+        - ancien_mot_de_passe
+        - nouveau_mot_de_passe
+      properties:
+        ancien_mot_de_passe:
+          type: string
+          example: "AncienMotDePasse123"
+        nouveau_mot_de_passe:
+          type: string
+          minLength: 8
+          example: "NouveauMotDePasse456"
+
+    UtilisateurBloque:
+      type: object
+      properties:
+        id_utilisateur:
+          type: integer
+          example: 5
+        nom_complet:
+          type: string
+          example: "Utilisateur Bloqué"
+        nom_utilisateur:
+          type: string
+          example: "userbloque"
+        email:
+          type: string
+          example: "bloque@example.com"
+        date_blocage:
+          type: string
+          format: date-time
+          example: "2026-01-26T14:30:00Z"
+        raison_blocage:
+          type: string
+          example: "Trop de tentatives de connexion"
+        tentatives_connexion_echouees:
+          type: integer
+          example: 3
+
+    Erreur:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Message d'erreur descriptif"
+        code:
+          type: string
+          example: "ERR_CODE"
+
+    HealthResponse:
+      type: object
+      properties:
+        statut:
+          type: string
+          example: "ok"
+        baseDeDonnees:
+          type: string
+          example: "ok"
+        firebase:
+          type: string
+          example: "ok"
+
+paths:
+  /health:
+    get:
+      tags:
+        - Santé
+      summary: Vérifier l'état de l'API
+      description: Endpoint de santé pour vérifier que l'API, la base de données PostgreSQL et Firebase sont opérationnels
+      responses:
+        '200':
+          description: API opérationnelle
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /auth/register:
+    post:
+      tags:
+        - Authentification
+      summary: Créer un nouveau compte utilisateur
+      description: |
+        Inscription d'un nouvel utilisateur avec validation:
+        - Email unique
+        - Nom d'utilisateur unique
+        - Mot de passe minimum 8 caractères
+        
+        **Rate limiting:** 3 requêtes par heure par IP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InscriptionRequest'
+      responses:
+        '201':
+          description: Compte créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '409':
+          description: Email ou nom d'utilisateur déjà utilisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '429':
+          description: Trop de tentatives d'inscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+
+  /auth/login:
+    post:
+      tags:
+        - Authentification
+      summary: Se connecter avec email/mot de passe
+      description: |
+        Authentification d'un utilisateur existant.
+        
+        **Sécurité:**
+        - Maximum 3 tentatives échouées (paramétrable via MAX_LOGIN_ATTEMPTS)
+        - Blocage automatique après dépassement
+        - Rate limiting: 5 requêtes par 15 minutes par IP
+        
+        **Durée des tokens:**
+        - Access token: 2 heures (paramétrable via SESSION_DURATION_MINUTES)
+        - Refresh token: 7 jours
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnexionRequest'
+      responses:
+        '200':
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Identifiants invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Compte inactif
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '423':
+          description: Compte bloqué après trop de tentatives
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+              example:
+                message: "Compte bloqué après 3 tentatives de connexion échouées"
+        '429':
+          description: Trop de tentatives de connexion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentification
+      summary: Rafraîchir le token d'accès
+      description: |
+        Obtenir un nouveau token d'accès avec un refresh token valide.
+        Permet de prolonger la session sans redemander les identifiants.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Token rafraîchi avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jetonAcces:
+                    type: string
+                  jetonRefresh:
+                    type: string
+        '401':
+          description: Refresh token invalide ou expiré
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentification
+      summary: Se déconnecter
+      description: Invalide la session active de l'utilisateur
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Déconnexion réussie
+        '401':
+          description: Token invalide ou manquant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+
+  /auth/me:
+    get:
+      tags:
+        - Profil
+      summary: Consulter son profil
+      description: Récupère les informations du profil de l'utilisateur connecté
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profil récupéré
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  utilisateur:
+                    $ref: '#/components/schemas/Utilisateur'
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+
+  /users/me:
+    patch:
+      tags:
+        - Profil
+      summary: Modifier son profil
+      description: |
+        Met à jour les informations du profil utilisateur.
+        Les champs non fournis ne seront pas modifiés.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModifierProfilRequest'
+      responses:
+        '200':
+          description: Profil mis à jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  utilisateur:
+                    $ref: '#/components/schemas/Utilisateur'
+        '400':
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+
+  /users/me/password:
+    patch:
+      tags:
+        - Profil
+      summary: Changer son mot de passe
+      description: Permet de modifier son mot de passe en fournissant l'ancien
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangerMotDePasseRequest'
+      responses:
+        '200':
+          description: Mot de passe modifié
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Mot de passe mis à jour"
+        '400':
+          description: Données manquantes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '401':
+          description: Ancien mot de passe incorrect ou non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+
+  /users/blocked:
+    get:
+      tags:
+        - Administration
+      summary: Lister les utilisateurs bloqués
+      description: |
+        Liste tous les utilisateurs dont le compte est bloqué.
+        
+        **Accès:** Manager uniquement (id_type_utilisateur = 1)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des utilisateurs bloqués
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  utilisateurs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UtilisateurBloque'
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Accès refusé (rôle insuffisant)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+
+  /users/{id_utilisateur}/unblock:
+    post:
+      tags:
+        - Administration
+      summary: Débloquer un utilisateur
+      description: |
+        Réinitialise le blocage d'un utilisateur et remet le compteur de tentatives à zéro.
+        
+        **Accès:** Manager uniquement (id_type_utilisateur = 1)
+        
+        **Conforme au cahier des charges:** "Un API REST peut réinitialiser le blocage pour un utilisateur donné"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id_utilisateur
+          in: path
+          required: true
+          description: ID de l'utilisateur à débloquer
+          schema:
+            type: integer
+            example: 5
+      responses:
+        '200':
+          description: Utilisateur débloqué avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Utilisateur 5 débloqué avec succès"
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Accès refusé (rôle insuffisant)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: Utilisateur introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'

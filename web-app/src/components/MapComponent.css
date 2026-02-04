@@ -1,0 +1,260 @@
+/* ============================================
+   MAP COMPONENT - STYLES
+   ============================================ */
+
+.map-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.map-container-leaflet {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.map-loading {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    font-weight: 600;
+    color: #667eea;
+}
+
+/* ============================================
+   LEAFLET POPUP PERSONNALISÉ
+   ============================================ */
+
+.custom-popup {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 10px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+}
+
+.leaflet-popup-content {
+    margin: 0 !important;
+    width: auto !important;
+    max-width: 320px !important;
+}
+
+.popup-content {
+    padding: 0;
+}
+
+.popup-content h4 {
+    margin: 0;
+    padding: 15px 15px 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px 10px 0 0;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.popup-info {
+    padding: 15px;
+    background: white;
+    border-radius: 0 0 10px 10px;
+}
+
+.popup-info p {
+    margin: 8px 0;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.popup-info strong {
+    color: #667eea;
+    font-weight: 600;
+}
+
+.status-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    color: white;
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin-left: 5px;
+}
+
+.popup-btn {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.popup-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+}
+
+/* ============================================
+   LIENS PHOTOS DANS POPUP
+   ============================================ */
+
+.popup-photos {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+.popup-photos strong {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.popup-photos-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.photo-link-popup {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.photo-link-popup:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(245, 87, 108, 0.4);
+}
+
+.more-photos {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    background: #eee;
+    color: #666;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-style: italic;
+}
+
+/* ============================================
+   LÉGENDE DE LA CARTE
+   ============================================ */
+
+.map-legend {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    font-size: 0.85rem;
+    min-width: 150px;
+}
+
+.legend-title {
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0;
+    padding: 4px 0;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid white;
+    flex-shrink: 0;
+}
+
+/* ============================================
+   STYLES LEAFLET FIXES
+   ============================================ */
+
+.leaflet-container {
+    background: #f0f0f0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.leaflet-control-zoom {
+    border-radius: 6px !important;
+    overflow: hidden;
+}
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+    font-weight: 700 !important;
+}
+
+.leaflet-top.leaflet-right {
+    right: 15px;
+    top: 15px;
+}
+
+.leaflet-bottom.leaflet-left {
+    left: 15px;
+    bottom: 15px;
+}
+
+/* ============================================
+   POPUP PIN
+   ============================================ */
+
+.marker-icon {
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .map-legend {
+        bottom: 15px;
+        right: 15px;
+        padding: 12px;
+        font-size: 0.8rem;
+    }
+
+    .popup-content {
+        max-width: 100%;
+    }
+
+    .leaflet-popup {
+        width: auto !important;
+    }
+
+    .leaflet-popup-content-wrapper {
+        max-width: calc(100vw - 40px) !important;
+    }
+}

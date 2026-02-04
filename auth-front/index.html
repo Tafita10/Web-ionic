@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auth Front | Web Rojo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="badge">Confidential - P17</p>
+      <h1>Module Authentification</h1>
+      <p class="subtitle">API REST (Firebase / PostgreSQL) — Démo front minimale</p>
+    </div>
+    <div class="env">
+      <label for="apiBase">API</label>
+      <input id="apiBase" type="text" value="http://localhost:3000/api" />
+      <button id="setApi">Appliquer</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <section>
+      <h2>Inscription</h2>
+      <form id="formRegister" class="card">
+        <label>Nom complet<input name="nom_complet" required /></label>
+        <label>Nom utilisateur<input name="nom_utilisateur" required /></label>
+        <label>Email<input name="email" type="email" required /></label>
+        <label>Mot de passe<input name="mot_de_passe" type="password" required /></label>
+        <button type="submit">Créer le compte</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Connexion</h2>
+      <form id="formLogin" class="card">
+        <label>Email ou nom utilisateur<input name="identifiant" required /></label>
+        <label>Mot de passe<input name="mot_de_passe" type="password" required /></label>
+        <button type="submit">Se connecter</button>
+      </form>
+      <div class="token-box">
+        <p>Access Token: <span id="accessPreview">-</span></p>
+        <p>Refresh Token: <span id="refreshPreview">-</span></p>
+        <div class="actions-inline">
+          <button id="btnRefresh">Rafraîchir token</button>
+          <button id="btnLogout">Déconnexion</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Mon profil</h2>
+      <div class="actions-inline">
+        <button id="btnMe">Afficher</button>
+      </div>
+      <pre id="meOutput" class="card output">Aucune donnée</pre>
+    </section>
+
+    <section>
+      <h2>Modifier profil</h2>
+      <form id="formProfile" class="card">
+        <label>Nom complet<input name="nom_complet" /></label>
+        <label>Nom utilisateur<input name="nom_utilisateur" /></label>
+        <label>Téléphone<input name="telephone" /></label>
+        <label>Email<input name="email" type="email" /></label>
+        <button type="submit">Mettre à jour</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Changer mot de passe</h2>
+      <form id="formPassword" class="card">
+        <label>Ancien mot de passe<input name="ancien_mot_de_passe" type="password" required /></label>
+        <label>Nouveau mot de passe<input name="nouveau_mot_de_passe" type="password" required /></label>
+        <button type="submit">Changer</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Utilisateurs bloqués (Manager)</h2>
+      <div class="actions-inline">
+        <button id="btnBlocked">Lister</button>
+      </div>
+      <pre id="blockedOutput" class="card output">Aucune donnée</pre>
+      <form id="formUnblock" class="card">
+        <label>ID utilisateur à débloquer<input name="id_utilisateur" type="number" required /></label>
+        <button type="submit">Débloquer</button>
+      </form>
+    </section>
+  </main>
+
+  <section class="log-panel">
+    <div class="log-header">
+      <h2>Journal</h2>
+      <div class="actions-inline">
+        <label><input type="checkbox" id="autoScroll" checked /> Auto-scroll</label>
+        <button id="btnClearLog">Effacer</button>
+      </div>
+    </div>
+    <pre id="log" class="log"></pre>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
