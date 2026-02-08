@@ -1,0 +1,49 @@
+# Environnement local
+.env
+.env.local
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build
+dist/
+build/
+.output/
+.vite/
+.nuxt/
+
+# Capacitor
+android/
+ios/
+*.apk
+*.ipa
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+logs/
+*.log
+
+# Docker
+postgres_data/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

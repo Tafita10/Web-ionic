@@ -1,0 +1,7 @@
+{
+  "name": "signalement-route-mobile",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}

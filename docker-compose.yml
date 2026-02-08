@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  # Base de données PostgreSQL locale (mode hors ligne)
+  postgres:
+    image: postgres:15-alpine
+    container_name: signalement_route_db
+    environment:
+      POSTGRES_DB: signalement_route
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      # Initialisation de la base avec le script SQL
+      - ./script.sql:/docker-entrypoint-initdb.d/script.sql
+      # Persistance des données
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
