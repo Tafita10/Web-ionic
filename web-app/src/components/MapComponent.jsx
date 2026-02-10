@@ -47,7 +47,7 @@ const MapBounds = ({ signalements }) => {
     return null;
 };
 
-const MapComponent = ({ signalements, onSelectSignalement, loading }) => {
+const MapComponent = ({ signalements, onSelectSignalement, loading, isPublic = false }) => {
     const [mapKey, setMapKey] = useState(0);
 
     // Antananarivo center
@@ -86,7 +86,7 @@ const MapComponent = ({ signalements, onSelectSignalement, loading }) => {
                                     {sig.surface_endommagee_m2 && (
                                         <p><strong>📏 Surface:</strong> {parseFloat(sig.surface_endommagee_m2).toFixed(2)} m²</p>
                                     )}
-                                    {sig.budget_estime_ar && (
+                                    {!isPublic && sig.budget_estime_ar && (
                                         <p><strong>💰 Budget:</strong> {(parseFloat(sig.budget_estime_ar) / 1000000).toFixed(1)}M Ar</p>
                                     )}
                                     {sig.nom_entreprise && (

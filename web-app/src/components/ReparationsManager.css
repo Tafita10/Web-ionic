@@ -1,0 +1,430 @@
+/* Réparations Manager Styles */
+
+.reparations-manager {
+    padding: 2rem;
+}
+
+.reparations-header {
+    margin-bottom: 2rem;
+}
+
+.reparations-header h1 {
+    font-size: 2rem;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.reparations-header p {
+    color: #64748b;
+}
+
+/* Statistiques */
+.reparations-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    font-size: 2rem;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.stat-label {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+/* Signalements sans réparation */
+.signalements-sans-reparation,
+.reparations-existantes {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+}
+
+.signalements-sans-reparation h2,
+.reparations-existantes h2 {
+    font-size: 1.25rem;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.signalements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.signalement-card-mini {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.2s;
+}
+
+.signalement-card-mini:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.card-header-mini {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.card-header-mini h4 {
+    font-size: 1rem;
+    color: #1e293b;
+    margin: 0;
+    flex: 1;
+}
+
+.gravite-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.gravite-faible { background: #dcfce7; color: #15803d; }
+.gravite-moyen { background: #fef9c3; color: #a16207; }
+.gravite-élevé { background: #fed7aa; color: #c2410c; }
+.gravite-critique { background: #fecaca; color: #dc2626; }
+
+.card-info {
+    margin-bottom: 1rem;
+}
+
+.card-info p {
+    margin: 0.25rem 0;
+    font-size: 0.875rem;
+    color: #475569;
+}
+
+.btn-creer-reparation {
+    width: 100%;
+    padding: 0.75rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-creer-reparation:hover {
+    background: #2563eb;
+}
+
+/* Table réparations */
+.reparations-table-container {
+    overflow-x: auto;
+}
+
+.reparations-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.reparations-table th,
+.reparations-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.reparations-table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.875rem;
+}
+
+.reparations-table .center {
+    text-align: center;
+}
+
+.reparations-table .right {
+    text-align: right;
+}
+
+.niveau-badge {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    border-radius: 50%;
+    font-weight: 700;
+}
+
+.etat-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.etat-prevue { background: #e0e7ff; color: #4f46e5; }
+.etat-en_cours { background: #fef3c7; color: #d97706; }
+.etat-terminee { background: #d1fae5; color: #059669; }
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.2s;
+}
+
+.btn-action:hover {
+    transform: scale(1.1);
+}
+
+.btn-start { background: #fef3c7; }
+.btn-complete { background: #d1fae5; }
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #1e293b;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #64748b;
+}
+
+.btn-close:hover {
+    color: #1e293b;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.signalement-info {
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.signalement-info h4 {
+    margin: 0 0 0.5rem 0;
+    color: #1e293b;
+}
+
+.signalement-info p {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+    color: #475569;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+.form-group input[type="range"] {
+    width: calc(100% - 50px);
+    vertical-align: middle;
+}
+
+.niveau-display {
+    display: inline-block;
+    width: 40px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #3b82f6;
+}
+
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.budget-calcul {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    padding: 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.prix-global-info {
+    text-align: center;
+    margin-bottom: 0.75rem;
+    opacity: 0.9;
+}
+
+.prix-global-info small {
+    font-size: 0.8rem;
+    background: rgba(255,255,255,0.15);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+}
+
+.formule {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.budget-result {
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.btn-cancel,
+.btn-submit {
+    flex: 1;
+    padding: 0.875rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.btn-cancel:hover {
+    background: #e2e8f0;
+}
+
+.btn-submit {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-submit:hover {
+    background: #2563eb;
+}
+
+.no-data {
+    text-align: center;
+    color: #94a3b8;
+    padding: 2rem;
+}
+
+.reparations-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    font-size: 1.25rem;
+    color: #64748b;
+}

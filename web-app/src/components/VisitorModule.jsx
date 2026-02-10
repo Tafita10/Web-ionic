@@ -111,7 +111,7 @@ const VisitorModule = () => {
 
             <div className="visitor-container">
                 {/* Panneau des statistiques */}
-                <StatisticsPanel stats={stats} loading={loading} />
+                <StatisticsPanel stats={stats} loading={loading} isPublic={true} />
 
                 {/* Section principale */}
                 <div className="visitor-main">
@@ -171,6 +171,7 @@ const VisitorModule = () => {
                             signalements={signalements}
                             onSelectSignalement={handleSelectSignalement}
                             loading={loading}
+                            isPublic={true}
                         />
                     </div>
 
@@ -200,7 +201,6 @@ const VisitorModule = () => {
                                         <th>Gravité</th>
                                         <th>Ville</th>
                                         <th>Surface (m²)</th>
-                                        <th>Budget (Ar)</th>
                                         <th>Photos</th>
                                         <th>Action</th>
                                     </tr>
@@ -225,9 +225,6 @@ const VisitorModule = () => {
                                             <td>{sig.nom_ville}</td>
                                             <td className="numeric">
                                                 {sig.surface_endommagee_m2 ? parseFloat(sig.surface_endommagee_m2).toFixed(2) : '-'}
-                                            </td>
-                                            <td className="numeric">
-                                                {sig.budget_estime_ar ? `${(parseFloat(sig.budget_estime_ar) / 1000000).toFixed(1)}M` : '-'}
                                             </td>
                                             <td className="text-center">
                                                 {sig.nombre_photos > 0 ? (
@@ -258,6 +255,7 @@ const VisitorModule = () => {
                 <SignalementModal 
                     signalement={selectedSignalement}
                     onClose={handleCloseModal}
+                    isPublic={true}
                 />
             )}
         </div>

@@ -103,7 +103,9 @@ const configuration = {
   },
 
   cors: {
-    origines: toListe(env.CORS_ORIGIN) || ['http://localhost:8080'],
+    origines: toListe(env.CORS_ORIGIN).length > 0 
+      ? toListe(env.CORS_ORIGIN) 
+      : ['http://localhost:3001', 'http://localhost:8080', 'http://127.0.0.1:3001'],
     credentials: toBooleen(env.CORS_CREDENTIALS, true)
   },
 

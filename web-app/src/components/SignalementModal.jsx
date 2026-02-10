@@ -1,7 +1,7 @@
 import React from 'react';
 import './SignalementModal.css';
 
-const SignalementModal = ({ signalement, onClose }) => {
+const SignalementModal = ({ signalement, onClose, isPublic = false }) => {
     const formatDate = (dateString) => {
         return new Date(dateString).toLocaleDateString('fr-FR', {
             year: 'numeric',
@@ -105,20 +105,53 @@ const SignalementModal = ({ signalement, onClose }) => {
                         </div>
                     </section>
 
-                    {/* Budget */}
-                    <section className="modal-section">
-                        <h3>💰 Budget</h3>
-                        <div className="budget-grid">
-                            <div className="budget-item">
-                                <label>Budget estimé:</label>
-                                <span className="budget-value">{formatBudget(signalement.budget_estime_ar)}</span>
+                    {/* Budget & Réparation - masqué en vue publique */}
+                    {!isPublic && (
+                        <section className="modal-section">
+                            <h3>💰 Réparation & Budget</h3>
+                            <div className="budget-grid">
+                                {signalement.niveau_reparation && (
+                                    <div className="budget-item">
+                                        <label>Niveau de réparation:</label>
+                                        <span className="budget-value">{signalement.niveau_reparation} / 10</span>
+                                    </div>
+                                )}
+                                {signalement.prix_par_m2 && (
+                                    <div className="budget-item">
+                                        <label>Prix par m²:</label>
+                                        <span className="budget-value">{parseFloat(signalement.prix_par_m2).toLocaleString('fr-FR')} Ar</span>
+                                    </div>
+                                )}
+                                <div className="budget-item">
+                                    <label>Budget estimé:</label>
+                                    <span className="budget-value">{formatBudget(signalement.budget_estime_ar)}</span>
+                                </div>
+                                <div className="budget-item">
+                                    <label>Budget réalisé:</label>
+                                    <span className="budget-value">{formatBudget(signalement.budget_reel_ar)}</span>
+                                </div>
+                                {signalement.etat_reparation && (
+                                    <div className="budget-item">
+                                        <label>État réparation:</label>
+                                        <span className={`etat-tag etat-${signalement.etat_reparation}`}>
+                                            {signalement.etat_reparation === 'prevue' ? 'Prévue' : 
+                                             signalement.etat_reparation === 'en_cours' ? 'En cours' : 'Terminée'}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
-                            <div className="budget-item">
-                                <label>Budget réalisé:</label>
-                                <span className="budget-value">{formatBudget(signalement.budget_reel_ar)}</span>
-                            </div>
-                        </div>
-                    </section>
+                            {signalement.prix_par_m2 && signalement.niveau_reparation && signalement.surface_endommagee_m2 && (
+                                <div className="budget-formula">
+                                    <small>
+                                        📐 Formule : {parseFloat(signalement.prix_par_m2).toLocaleString('fr-FR')} Ar/m² 
+                                        × niveau {signalement.niveau_reparation} 
+                                        × {parseFloat(signalement.surface_endommagee_m2).toFixed(2)} m² 
+                                        = <strong>{formatBudget(signalement.budget_estime_ar)}</strong>
+                                    </small>
+                                </div>
+                            )}
+                        </section>
+                    )}
 
                     {/* Travaux */}
                     {signalement.date_debut_travaux && (

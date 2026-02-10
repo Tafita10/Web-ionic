@@ -90,12 +90,13 @@ const changerStatut = async (idSignalement, idStatut, idUtilisateur, commentaire
 
 const listerEnAttenteSync = async () => {
   const { rows } = await pool.query(
-    `SELECT id_signalement, id_firebase, titre_signalement, description_signalement,
-            latitude, longitude, id_ville, id_utilisateur_createur, id_statut,
-            surface_endommagee_m2, budget_estime_ar, id_entreprise_assignee,
-            date_signalement
-     FROM signalements
-     WHERE est_synchronise = FALSE OR id_firebase IS NULL`
+    `SELECT s.id_signalement, s.id_firebase, s.titre_signalement, s.description_signalement,
+            s.latitude, s.longitude, s.id_ville, s.id_utilisateur_createur, s.id_statut,
+            s.surface_endommagee_m2, r.budget_estime_ar, r.id_entreprise_assignee,
+            s.date_signalement
+     FROM signalements s
+     LEFT JOIN reparation r ON s.id_signalement = r.id_signalement
+     WHERE s.est_synchronise = FALSE OR s.id_firebase IS NULL`
   );
   return rows;
 };

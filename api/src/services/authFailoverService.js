@@ -2,13 +2,13 @@
 
 const createError = require('http-errors');
 const { pool } = require('../config/database');
-const { auth: firebaseAuth, firestore, firebaseActif } = require('../config/firebase');
+const { database, firebaseActif } = require('../config/firebase');
 const journal = require('../config/logger');
 const { hasherMotDePasse, comparerMotDePasse } = require('../utils/motsdepasse');
 
 /**
  * Service de basculement automatique Firebase <-> PostgreSQL
- * Priorité : Firebase (si actif) > PostgreSQL (fallback)
+ * Priorité : Firebase Realtime Database (si actif) > PostgreSQL (fallback)
  */
 
 let etatFirebase = null;
@@ -26,50 +26,46 @@ const verifierFirebaseDisponible = async () => {
     return etatFirebase;
   }
 
-  if (!firebaseActif) {
+  if (!firebaseActif || !database) {
     etatFirebase = false;
     derniereVerification = maintenant;
-    journal.info('Firebase désactivé dans la configuration');
     return false;
   }
 
   try {
-    // Test rapide : Lister 1 utilisateur pour vérifier la connexion
-    await firebaseAuth.listUsers(1);
+    // Test rapide : vérifier la connexion à la base
+    await database.ref('.info/connected').once('value');
     etatFirebase = true;
     derniereVerification = maintenant;
-    journal.info('✓ Firebase disponible');
     return true;
   } catch (erreur) {
     etatFirebase = false;
     derniereVerification = maintenant;
-    journal.warn('✗ Firebase indisponible, basculement vers PostgreSQL', erreur.message);
+    journal.warn('✗ Firebase Realtime Database indisponible, basculement vers PostgreSQL');
     return false;
   }
 };
 
 /**
- * Créer utilisateur dans Firebase
+ * Créer utilisateur dans Firebase Realtime Database
  */
 const creerUtilisateurFirebase = async (email, motDePasse, nomComplet) => {
+  if (!database) {
+    throw createError(503, 'Firebase Realtime Database non disponible');
+  }
+
   try {
-    const userRecord = await firebaseAuth.createUser({
-      email,
-      password: motDePasse,
-      displayName: nomComplet,
-      disabled: false
-    });
+    const uid = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    // Enregistrer dans Firestore
-    await firestore.collection('utilisateurs').doc(userRecord.uid).set({
+    await database.ref(`utilisateurs/${uid}`).set({
       email,
       nom_complet: nomComplet,
-      date_creation: new Date(),
+      date_creation: Date.now(),
       source: 'firebase'
     });
     
     journal.info(`Utilisateur créé dans Firebase: ${email}`);
-    return userRecord.uid;
+    return uid;
   } catch (erreur) {
     journal.error('Erreur création utilisateur Firebase', erreur);
     throw erreur;
@@ -78,55 +74,14 @@ const creerUtilisateurFirebase = async (email, motDePasse, nomComplet) => {
 
 /**
  * Authentifier via Firebase
- * Note: L'Admin SDK ne peut pas vérifier le mot de passe directement.
- * Cette fonction suppose que l'utilisateur existe dans Firebase et retourne ses infos.
- * La vérification du mot de passe doit se faire côté client avec Firebase Auth Client SDK,
- * ou on vérifie le hash PostgreSQL si l'utilisateur est synchronisé.
+ * Note: Firebase Realtime Database ne gère pas l'authentification.
+ * On utilise PostgreSQL pour l'authentification et Firebase pour la sync des données.
  */
 const authentifierFirebase = async (email, motDePasse) => {
-  try {
-    // Récupérer l'utilisateur Firebase par email
-    const userRecord = await firebaseAuth.getUserByEmail(email);
-    
-    // Vérifier que le compte est actif
-    if (userRecord.disabled) {
-      throw createError(403, 'Compte Firebase désactivé');
-    }
-    
-    // Comme on ne peut pas vérifier le mot de passe avec l'Admin SDK,
-    // on vérifie d'abord si l'utilisateur existe dans PostgreSQL
-    const { pool } = require('../config/database');
-    const { comparerMotDePasse } = require('../utils/motsdepasse');
-    
-    const { rows } = await pool.query(
-      'SELECT mot_de_passe_hash FROM utilisateurs WHERE uid_firebase = $1 OR email = $2 LIMIT 1',
-      [userRecord.uid, email]
-    );
-    
-    if (rows.length > 0 && rows[0].mot_de_passe_hash) {
-      // Vérifier le mot de passe avec le hash PostgreSQL
-      const motOK = await comparerMotDePasse(motDePasse, rows[0].mot_de_passe_hash);
-      if (!motOK) {
-        throw createError(401, 'Mot de passe incorrect');
-      }
-    } else {
-      // Pas de hash dans PostgreSQL - on fait confiance que Firebase a validé
-      // (Ce cas se produit si l'utilisateur n'a été créé que dans Firebase)
-      journal.warn(`Authentification Firebase sans vérification PostgreSQL pour: ${email}`);
-    }
-    
-    return {
-      uid_firebase: userRecord.uid,
-      email: userRecord.email,
-      nom_complet: userRecord.displayName || email,
-      source: 'firebase'
-    };
-  } catch (erreur) {
-    if (erreur.code === 'auth/user-not-found') {
-      throw createError(401, 'Identifiants invalides');
-    }
-    throw erreur;
-  }
+  // Firebase Realtime Database n'a pas de système d'authentification utilisateur
+  // On se rabat sur PostgreSQL pour l'authentification
+  // Firebase est utilisé uniquement pour synchroniser les données
+  return null;
 };
 
 /**

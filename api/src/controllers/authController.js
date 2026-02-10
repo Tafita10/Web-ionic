@@ -37,6 +37,9 @@ const connecter = asyncHandler(async (req, res) => {
 
 const rafraichir = asyncHandler(async (req, res) => {
   const { refresh_token } = req.body;
+  if (!refresh_token) {
+    throw createError(400, 'Token de rafraîchissement requis');
+  }
   const resultat = await authService.rafraichir(refresh_token);
   res.json(resultat);
 });
@@ -52,10 +55,24 @@ const profil = asyncHandler(async (req, res) => {
   res.json({ utilisateur: req.utilisateur });
 });
 
+const debloquerUtilisateur = asyncHandler(async (req, res) => {
+  const { id_utilisateur } = req.body;
+  if (!id_utilisateur) throw createError(400, 'ID utilisateur requis');
+  
+  // Vérifier que l'utilisateur connecté est un manager (id_type_utilisateur = 1)
+  if (req.utilisateur.id_type_utilisateur !== 1) {
+    throw createError(403, 'Accès réservé aux managers');
+  }
+
+  const resultat = await authService.debloquerUtilisateur(id_utilisateur, req.utilisateur.id_utilisateur);
+  res.json(resultat);
+});
+
 module.exports = {
   inscrire,
   connecter,
   rafraichir,
   deconnecter,
-  profil
+  profil,
+  debloquerUtilisateur
 };

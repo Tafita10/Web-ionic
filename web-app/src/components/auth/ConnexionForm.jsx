@@ -68,7 +68,7 @@ const ConnexionForm = ({ onLogin, message, setMessage }) => {
           <input 
             value={identifiant} 
             onChange={(e) => setIdentifiant(e.target.value)} 
-            placeholder="manager@webrojo.mg"
+            placeholder=""
             required 
           />
 
@@ -85,7 +85,7 @@ const ConnexionForm = ({ onLogin, message, setMessage }) => {
             {chargement ? 'Connexion...' : 'Se connecter'}
           </button>
           
-          <p className="hint">💡 Compte manager par défaut: manager@webrojo.mg / password123</p>
+          <p className="hint">💡 Compte manager par défaut: password123</p>
         </form>
       ) : (
         <form className="form" onSubmit={soumettreInscription}>

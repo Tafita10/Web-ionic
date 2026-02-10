@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import MapComponent from './MapComponent';
+import SignalementModal from './SignalementModal';
 import './ManagerDashboard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -19,6 +21,7 @@ const ManagerDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedSignalement, setSelectedSignalement] = useState(null);
+    const [showModal, setShowModal] = useState(false);
     const [filtres, setFiltres] = useState({
         statut: '',
         gravite: '',
@@ -84,6 +87,25 @@ const ManagerDashboard = () => {
             console.error('Erreur changement statut:', err);
             alert('Erreur lors du changement de statut');
         }
+    };
+
+    // Ouvrir le modal d'un signalement depuis la carte
+    const handleSelectSignalement = async (id) => {
+        try {
+            const response = await axios.get(`${API_URL}/manager/signalements`, { headers });
+            const sig = (response.data.data || []).find(s => s.id_signalement === id);
+            if (sig) {
+                setSelectedSignalement(sig);
+                setShowModal(true);
+            }
+        } catch (err) {
+            console.error('Erreur chargement signalement:', err);
+        }
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setTimeout(() => setSelectedSignalement(null), 300);
     };
 
     useEffect(() => {
@@ -269,6 +291,20 @@ const ManagerDashboard = () => {
                 </div>
             </section>
 
+            {/* Carte interactive Manager (avec budget) */}
+            <section className="carte-manager-section">
+                <h2>🗺️ Carte des Signalements</h2>
+                <p className="section-desc">Vue géographique avec budgets estimés</p>
+                <div className="manager-map-container">
+                    <MapComponent
+                        signalements={signalements}
+                        onSelectSignalement={handleSelectSignalement}
+                        loading={loading}
+                        isPublic={false}
+                    />
+                </div>
+            </section>
+
             {/* Liste des signalements */}
             <section className="signalements-section">
                 <h2>📍 Liste des Signalements ({signalements.length})</h2>
@@ -377,6 +413,14 @@ const ManagerDashboard = () => {
                     ))}
                 </div>
             </section>
+            {/* Modal des détails */}
+            {showModal && selectedSignalement && (
+                <SignalementModal
+                    signalement={selectedSignalement}
+                    onClose={handleCloseModal}
+                    isPublic={false}
+                />
+            )}
         </div>
     );
 };

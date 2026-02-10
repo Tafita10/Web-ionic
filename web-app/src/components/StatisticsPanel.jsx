@@ -1,7 +1,7 @@
 import React from 'react';
 import './StatisticsPanel.css';
 
-const StatisticsPanel = ({ stats, loading }) => {
+const StatisticsPanel = ({ stats, loading, isPublic = false }) => {
     if (loading || !stats) {
         return (
             <div className="stats-panel loading">
@@ -31,13 +31,15 @@ const StatisticsPanel = ({ stats, loading }) => {
                 </div>
             </div>
 
-            <div className="stat-card">
-                <div className="stat-icon">💰</div>
-                <div className="stat-content">
-                    <div className="stat-value">{(stats.budget_total_ar / 1000000)?.toFixed(1)}M</div>
-                    <div className="stat-label">Budget (Ar)</div>
+            {!isPublic && (
+                <div className="stat-card">
+                    <div className="stat-icon">💰</div>
+                    <div className="stat-content">
+                        <div className="stat-value">{(stats.budget_total_ar / 1000000)?.toFixed(1)}M</div>
+                        <div className="stat-label">Budget (Ar)</div>
+                    </div>
                 </div>
-            </div>
+            )}
 
             <div className="stat-card progress-card">
                 <div className="stat-icon">✅</div>

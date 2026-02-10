@@ -1,0 +1,855 @@
+{
+	"info": {
+		"_postman_id": "webrojo-api-collection",
+		"name": "WebRojo API",
+		"description": "Collection Postman complète pour tester l'API WebRojo - Gestion des signalements routiers à Antananarivo.\n\n## Configuration\n1. Importer cette collection dans Postman\n2. Les variables `base_url` et `token` sont gérées automatiquement\n3. Commencer par **Login Manager** pour obtenir le token\n4. Le token est auto-injecté dans toutes les requêtes authentifiées",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000/api",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "🔐 Authentification",
+			"item": [
+				{
+					"name": "Login Manager",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var json = pm.response.json();",
+									"    pm.collectionVariables.set('token', json.jetonAcces || json.token);",
+									"    pm.collectionVariables.set('refresh_token', json.jetonRefresh || json.refreshToken);",
+									"    pm.test('Login réussi', function() {",
+									"        pm.expect(json.utilisateur).to.exist;",
+									"        pm.expect(json.utilisateur.id_type_utilisateur).to.eql(1);",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"identifiant\": \"manager\",\n    \"mot_de_passe\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Connexion en tant que Manager. Le token JWT est automatiquement sauvegardé dans les variables de collection."
+					}
+				},
+				{
+					"name": "Login Utilisateur",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var json = pm.response.json();",
+									"    pm.collectionVariables.set('token', json.jetonAcces || json.token);",
+									"    pm.collectionVariables.set('refresh_token', json.jetonRefresh || json.refreshToken);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"identifiant\": \"manager@gmail.com\",\n    \"mot_de_passe\": \"manda123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Inscription",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom_complet\": \"Jean Rakoto\",\n    \"email\": \"jean@webrojo.mg\",\n    \"nom_utilisateur\": \"jrakoto\",\n    \"mot_de_passe\": \"MotDePasse123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var json = pm.response.json();",
+									"    pm.collectionVariables.set('token', json.jetonAcces);",
+									"    pm.collectionVariables.set('refresh_token', json.jetonRefresh);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refresh_token\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/refresh",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "refresh"]
+						}
+					}
+				},
+				{
+					"name": "Profil (me)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/me",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "me"]
+						}
+					}
+				},
+				{
+					"name": "Déconnexion",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/logout",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "logout"]
+						}
+					}
+				},
+				{
+					"name": "Débloquer utilisateur (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id_utilisateur\": 5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/unlock-user",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "unlock-user"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🗺️ Visitor (Public)",
+			"item": [
+				{
+					"name": "Statistiques publiques",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Stats OK', function() {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.eql(true);",
+									"    pm.expect(json.data.nombre_total).to.be.a('number');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/visitor/stats",
+							"host": ["{{base_url}}"],
+							"path": ["visitor", "stats"]
+						}
+					}
+				},
+				{
+					"name": "Liste signalements publics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Signalements OK', function() {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.eql(true);",
+									"    pm.expect(json.data).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/visitor/signalements",
+							"host": ["{{base_url}}"],
+							"path": ["visitor", "signalements"]
+						}
+					}
+				},
+				{
+					"name": "Signalements filtrés (statut)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/visitor/signalements?statut=Nouveau",
+							"host": ["{{base_url}}"],
+							"path": ["visitor", "signalements"],
+							"query": [
+								{ "key": "statut", "value": "Nouveau" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Signalements filtrés (gravité)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/visitor/signalements?gravite=Critique",
+							"host": ["{{base_url}}"],
+							"path": ["visitor", "signalements"],
+							"query": [
+								{ "key": "gravite", "value": "Critique" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Détail signalement (id=1)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/visitor/signalements/1",
+							"host": ["{{base_url}}"],
+							"path": ["visitor", "signalements", "1"]
+						}
+					}
+				},
+				{
+					"name": "Données carte (map-data)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/visitor/map-data",
+							"host": ["{{base_url}}"],
+							"path": ["visitor", "map-data"]
+						}
+					}
+				},
+				{
+					"name": "Liste des villes",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/visitor/villes",
+							"host": ["{{base_url}}"],
+							"path": ["visitor", "villes"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🛠️ Manager (Authentifié)",
+			"item": [
+				{
+					"name": "Statistiques Manager",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Stats Manager OK', function() {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.data.nombre_total_travaux).to.be.a('number');",
+									"    pm.expect(json.data.delai_moyen_traitement_jours).to.be.a('number');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/manager/stats",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "stats"]
+						}
+					}
+				},
+				{
+					"name": "Liste signalements Manager",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/manager/signalements",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "signalements"]
+						}
+					}
+				},
+				{
+					"name": "Signalements filtrés Manager",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/manager/signalements?statut=En cours&gravite=Élevé",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "signalements"],
+							"query": [
+								{ "key": "statut", "value": "En cours" },
+								{ "key": "gravite", "value": "Élevé" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Changer statut → En cours",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id_nouveau_statut\": 2,\n    \"commentaire\": \"Travaux démarrés\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/manager/signalements/1/statut",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "signalements", "1", "statut"]
+						},
+						"description": "Statuts: 1=Nouveau, 2=En cours, 3=Terminé, 4=Annulé"
+					}
+				},
+				{
+					"name": "Changer statut → Terminé",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id_nouveau_statut\": 3,\n    \"commentaire\": \"Travaux terminés avec succès\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/manager/signalements/1/statut",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "signalements", "1", "statut"]
+						}
+					}
+				},
+				{
+					"name": "Enrichir signalement",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"surface_endommagee_m2\": 15.5,\n    \"profondeur_cm\": 12,\n    \"longueur_m\": 5,\n    \"largeur_m\": 3.1,\n    \"niveau_reparation\": 7,\n    \"prix_par_m2\": 5000,\n    \"id_entreprise_assignee\": 1,\n    \"duree_estimee_jours\": 14,\n    \"commentaire_interne\": \"Nécessite engins lourds\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/manager/signalements/1/enrichir",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "signalements", "1", "enrichir"]
+						}
+					}
+				},
+				{
+					"name": "Historique statuts (id=1)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/manager/signalements/1/historique",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "signalements", "1", "historique"]
+						}
+					}
+				},
+				{
+					"name": "Délais par type de problème",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/manager/delais-par-type",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "delais-par-type"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🏢 Entreprises (Manager)",
+			"item": [
+				{
+					"name": "Liste entreprises",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/manager/entreprises",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "entreprises"]
+						}
+					}
+				},
+				{
+					"name": "Statistiques par entreprise",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/manager/entreprises/stats",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "entreprises", "stats"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🔧 Réparations (Manager)",
+			"item": [
+				{
+					"name": "Liste des réparations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/manager/reparations",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "reparations"]
+						}
+					}
+				},
+				{
+					"name": "Réparations filtrées (état)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/manager/reparations?etat=en_cours",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "reparations"],
+							"query": [
+								{ "key": "etat", "value": "en_cours" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Créer réparation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id_signalement\": 1,\n    \"niveau_reparation\": 5,\n    \"prix_par_m2\": 5000,\n    \"budget_estime_ar\": 312500,\n    \"id_entreprise_assignee\": 1,\n    \"duree_estimee_jours\": 10,\n    \"commentaire\": \"Réparation urgente\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/manager/reparations",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "reparations"]
+						},
+						"description": "Budget calculé: prix_par_m2 × niveau × surface_m2"
+					}
+				},
+				{
+					"name": "Réparation d'un signalement (id=1)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/manager/signalements/1/reparation",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "signalements", "1", "reparation"]
+						}
+					}
+				},
+				{
+					"name": "Upsert réparation (signalement id=1)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"niveau_reparation\": 7,\n    \"prix_par_m2\": 5000,\n    \"id_entreprise_assignee\": 2,\n    \"duree_estimee_jours\": 21,\n    \"etat_reparation\": \"en_cours\",\n    \"commentaire\": \"Mise à jour niveau de réparation\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/manager/signalements/1/reparation",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "signalements", "1", "reparation"]
+						}
+					}
+				},
+				{
+					"name": "Modifier réparation (id=1)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"etat_reparation\": \"terminee\",\n    \"budget_reel_ar\": 350000,\n    \"commentaire\": \"Terminée avec léger dépassement\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/manager/reparations/1",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "reparations", "1"]
+						}
+					}
+				},
+				{
+					"name": "Supprimer réparation (id=1)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/manager/reparations/1",
+							"host": ["{{base_url}}"],
+							"path": ["manager", "reparations", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📍 Signalements (CRUD)",
+			"item": [
+				{
+					"name": "Lister signalements",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/signalements",
+							"host": ["{{base_url}}"],
+							"path": ["signalements"]
+						}
+					}
+				},
+				{
+					"name": "Créer signalement",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"titre_signalement\": \"Nid de poule Avenue de l'Indépendance\",\n    \"description_signalement\": \"Large trou de 2m de diamètre, dangereux pour les véhicules\",\n    \"latitude\": -18.9108,\n    \"longitude\": 47.5236,\n    \"id_ville\": 1,\n    \"id_type_probleme\": 1,\n    \"niveau_gravite\": \"Élevé\",\n    \"surface_endommagee_m2\": 3.14\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/signalements",
+							"host": ["{{base_url}}"],
+							"path": ["signalements"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "👤 Utilisateurs",
+			"item": [
+				{
+					"name": "Lister tous les utilisateurs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/utilisateurs",
+							"host": ["{{base_url}}"],
+							"path": ["utilisateurs"]
+						}
+					}
+				},
+				{
+					"name": "Modifier mon profil",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom_complet\": \"Manager Modifié\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/utilisateurs/me",
+							"host": ["{{base_url}}"],
+							"path": ["utilisateurs", "me"]
+						}
+					}
+				},
+				{
+					"name": "Changer mot de passe",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ancien_mot_de_passe\": \"password123\",\n    \"nouveau_mot_de_passe\": \"NouveauMDP456!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/utilisateurs/me/password",
+							"host": ["{{base_url}}"],
+							"path": ["utilisateurs", "me", "password"]
+						}
+					}
+				},
+				{
+					"name": "Utilisateurs bloqués",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/utilisateurs/blocked",
+							"host": ["{{base_url}}"],
+							"path": ["utilisateurs", "blocked"]
+						}
+					}
+				},
+				{
+					"name": "Débloquer utilisateur (id=5)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/utilisateurs/5/unblock",
+							"host": ["{{base_url}}"],
+							"path": ["utilisateurs", "5", "unblock"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📋 Sessions",
+			"item": [
+				{
+					"name": "Mes sessions actives",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/sessions",
+							"host": ["{{base_url}}"],
+							"path": ["sessions"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🔄 Sync Firebase (Manager)",
+			"item": [
+				{
+					"name": "Statut Firebase",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/sync/firebase-status",
+							"host": ["{{base_url}}"],
+							"path": ["sync", "firebase-status"]
+						}
+					}
+				},
+				{
+					"name": "Pull Firebase → PostgreSQL",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/sync/pull",
+							"host": ["{{base_url}}"],
+							"path": ["sync", "pull"]
+						}
+					}
+				},
+				{
+					"name": "Push PostgreSQL → Firebase",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/sync/push",
+							"host": ["{{base_url}}"],
+							"path": ["sync", "push"]
+						}
+					}
+				},
+				{
+					"name": "Sync utilisateurs",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/sync/sync-utilisateurs",
+							"host": ["{{base_url}}"],
+							"path": ["sync", "sync-utilisateurs"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "❤️ Santé",
+			"item": [
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('API OK', function() {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						}
+					}
+				}
+			]
+		}
+	]
+}

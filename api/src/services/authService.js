@@ -163,61 +163,29 @@ const reinitialiserTentatives = async (idUtilisateur, adresseIp) => {
 };
 
 const connecter = async ({ identifiant, motDePasse, adresseIp, userAgent }) => {
-  let utilisateur = null;
   let source = 'postgres';
+  
+  // Utiliser PostgreSQL pour l'authentification
+  // Firebase Realtime Database est utilisé uniquement pour la synchronisation des données
+  const { rows } = await pool.query(
+    `SELECT ${selectionUtilisateur}, mot_de_passe_hash FROM utilisateurs
+     WHERE email = $1 OR nom_utilisateur = $1
+     LIMIT 1`,
+    [identifiant]
+  );
+  
+  const utilisateur = rows[0];
+  if (!utilisateur) throw createError(401, 'Identifiants invalides');
+  if (!utilisateur.est_actif) throw createError(403, 'Compte inactif');
+  if (utilisateur.est_bloque) throw createError(423, 'Compte bloqué');
 
-  // Étape 1 : Essayer Firebase d'abord (priorité)
-  const firebaseDisponible = await verifierFirebaseDisponible();
-  if (firebaseDisponible) {
-    try {
-      // Authentifier via Firebase
-      const utilisateurFirebase = await authentifierFirebase(identifiant, motDePasse);
-      
-      // Synchroniser avec PostgreSQL
-      const idUtilisateur = await syncUtilisateurVersPostgres(
-        utilisateurFirebase.uid_firebase,
-        utilisateurFirebase
-      );
-      
-      // Récupérer l'utilisateur complet depuis PostgreSQL
-      const { rows } = await pool.query(
-        `SELECT ${selectionUtilisateur} FROM utilisateurs WHERE id_utilisateur = $1 LIMIT 1`,
-        [idUtilisateur]
-      );
-      
-      utilisateur = rows[0];
-      source = 'firebase';
-      journal.info(`✓ Connexion réussie via Firebase: ${identifiant}`);
-    } catch (erreur) {
-      // Si Firebase échoue, on essaiera PostgreSQL
-      journal.warn(`⚠ Échec authentification Firebase, basculement vers PostgreSQL: ${erreur.message}`);
-    }
-  } else {
-    journal.info('Firebase indisponible, authentification via PostgreSQL');
+  const motOK = await comparerMotDePasse(motDePasse, utilisateur.mot_de_passe_hash);
+  if (!motOK) {
+    await incrementerTentative(utilisateur, adresseIp, userAgent);
+    throw createError(401, 'Identifiants invalides');
   }
-
-  // Étape 2 : Si Firebase a échoué ou est indisponible, utiliser PostgreSQL
-  if (!utilisateur) {
-    const { rows } = await pool.query(
-      `SELECT ${selectionUtilisateur}, mot_de_passe_hash FROM utilisateurs
-       WHERE email = $1 OR nom_utilisateur = $1
-       LIMIT 1`,
-      [identifiant]
-    );
-    utilisateur = rows[0];
-    if (!utilisateur) throw createError(401, 'Identifiants invalides');
-    if (!utilisateur.est_actif) throw createError(403, 'Compte inactif');
-    if (utilisateur.est_bloque) throw createError(423, 'Compte bloqué');
-
-    const motOK = await comparerMotDePasse(motDePasse, utilisateur.mot_de_passe_hash);
-    if (!motOK) {
-      await incrementerTentative(utilisateur, adresseIp, userAgent);
-      throw createError(401, 'Identifiants invalides');
-    }
-    
-    source = 'postgres';
-    journal.info(`✓ Connexion réussie via PostgreSQL: ${identifiant}`);
-  }
+  
+  journal.info(`✓ Connexion réussie via PostgreSQL: ${identifiant}`);
 
   await reinitialiserTentatives(utilisateur.id_utilisateur, adresseIp);
   const jetonAcces = creerTokenAcces(utilisateur);
@@ -231,12 +199,22 @@ const connecter = async ({ identifiant, motDePasse, adresseIp, userAgent }) => {
     jetonRefresh,
     source
   };
-};
+};;
 
 const rafraichir = async (jetonRafraichissement) => {
   if (!jetonRafraichissement) throw createError(401, 'Token de rafraîchissement requis');
+  
+  // Vérifier que le token n'est pas vide ou mal formé
+  if (typeof jetonRafraichissement !== 'string' || jetonRafraichissement.trim() === '') {
+    throw createError(401, 'Token de rafraîchissement invalide');
+  }
 
-  const payload = verifierTokenRafraichissement(jetonRafraichissement);
+  let payload;
+  try {
+    payload = verifierTokenRafraichissement(jetonRafraichissement);
+  } catch (erreur) {
+    throw createError(401, 'Token de rafraîchissement invalide ou expiré');
+  }
   const { rows: sessions } = await pool.query(
     `SELECT id_utilisateur FROM sessions_utilisateur
      WHERE jeton_rafraichissement = $1 AND est_active = TRUE AND date_expiration > CURRENT_TIMESTAMP
@@ -276,9 +254,49 @@ const deconnecter = async (jetonSession) => {
   );
 };
 
+const debloquerUtilisateur = async (idUtilisateur, idAdmin) => {
+  // Vérifier que l'utilisateur existe
+  const { rows } = await pool.query(
+    `SELECT id_utilisateur, email, est_bloque FROM utilisateurs WHERE id_utilisateur = $1`,
+    [idUtilisateur]
+  );
+  
+  if (rows.length === 0) {
+    throw createError(404, 'Utilisateur non trouvé');
+  }
+
+  const utilisateur = rows[0];
+  if (!utilisateur.est_bloque) {
+    throw createError(400, 'Utilisateur non bloqué');
+  }
+
+  // Débloquer et réinitialiser compteur
+  await pool.query(
+    `UPDATE utilisateurs
+     SET est_bloque = FALSE,
+         tentatives_connexion_echouees = 0,
+         date_blocage = NULL,
+         raison_blocage = NULL,
+         date_modification = CURRENT_TIMESTAMP
+     WHERE id_utilisateur = $1`,
+    [idUtilisateur]
+  );
+
+  journal.info(`Utilisateur ${utilisateur.email} débloqué par admin ID ${idAdmin}`);
+  
+  return {
+    message: 'Utilisateur débloqué avec succès',
+    utilisateur: {
+      id_utilisateur: utilisateur.id_utilisateur,
+      email: utilisateur.email
+    }
+  };
+};
+
 module.exports = {
   inscrire,
   connecter,
   rafraichir,
-  deconnecter
+  deconnecter,
+  debloquerUtilisateur
 };

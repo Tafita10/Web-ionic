@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import VisitorPage from './VisitorPage';
 import ManagerPage from './ManagerPage';
 import LoginPage from './LoginPage';
@@ -18,7 +18,9 @@ import './AppRouter.css';
 // Composant Navigation avec état d'authentification
 const Navigation = ({ isAuthenticated, onLogout }) => {
     const navigate = useNavigate();
+    const location = useLocation();
     const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const isManagerRoute = location.pathname.startsWith('/manager');
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -32,14 +34,16 @@ const Navigation = ({ isAuthenticated, onLogout }) => {
         <nav className="main-nav">
             <div className="nav-brand">
                 <span className="brand-icon">🛣️</span>
-                <span className="brand-text">WebRojo</span>
+                <span className="brand-text"></span>
             </div>
             
             <div className="nav-links">
-                <Link to="/" className="nav-link">
-                    <span className="nav-icon">🗺️</span>
-                    <span>Carte Publique</span>
-                </Link>
+                {!isManagerRoute && (
+                    <Link to="/" className="nav-link">
+                        <span className="nav-icon">🗺️</span>
+                        <span>Carte Publique</span>
+                    </Link>
+                )}
                 
                 {isAuthenticated ? (
                     <>
@@ -136,7 +140,7 @@ const AppRouter = () => {
 
             {/* Footer */}
             <footer className="app-footer">
-                <p>© 2026 WebRojo - Signalement Routier Antananarivo</p>
+                <p>© 2026 Signalement Routier Antananarivo</p>
                 <p className="footer-links">
                     <a href="#help">Aide</a> | <a href="#contact">Contact</a>
                 </p>

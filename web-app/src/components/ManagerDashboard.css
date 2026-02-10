@@ -504,6 +504,45 @@ section h2 {
 }
 
 /* ============================================
+   CARTE MANAGER
+   ============================================ */
+
+.carte-manager-section {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.carte-manager-section h2 {
+    margin: 0 0 5px 0;
+    color: #333;
+    font-size: 1.3rem;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #667eea;
+}
+
+.carte-manager-section .section-desc {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0 0 20px 0;
+}
+
+.manager-map-container {
+    height: 500px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .manager-map-container {
+        height: 350px;
+    }
+}
+
+/* ============================================
    SECTION DÉLAIS PAR TYPE DE PROBLÈME
    ============================================ */
 
